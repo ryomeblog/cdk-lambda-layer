@@ -12,6 +12,13 @@ export class CdkLambdaLayerStack extends cdk.Stack {
     // S3バケットの参照を取得
     const bucket = s3.Bucket.fromBucketName(this, 'ExistingBucket', 'node12-testup-20231113');
 
+    // Lambda Layerの作成
+    const awsSdkLayer = new lambda.LayerVersion(this, 'AwsSdkLayer', {
+      code: lambda.Code.fromAsset(path.join(__dirname, '..', 'lambda-layer')),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      description: 'AWS SDK Layer for Lambda functions',
+    });
+
     // Lambda関数の定義リスト
     const lambdaFunctions = [
       { folder: 'test1/A001', name: 'A001Function' },
@@ -34,6 +41,7 @@ export class CdkLambdaLayerStack extends cdk.Stack {
         functionName: name,
         timeout: cdk.Duration.seconds(30),
         memorySize: 256,
+        layers: [awsSdkLayer],
       });
 
       // S3バケットへの読み取り権限を付与
@@ -44,6 +52,12 @@ export class CdkLambdaLayerStack extends cdk.Stack {
         value: fn.functionArn,
         description: `ARN of ${name}`,
       });
+    });
+
+    // LayerのARNを出力
+    new cdk.CfnOutput(this, 'AwsSdkLayerArn', {
+      value: awsSdkLayer.layerVersionArn,
+      description: 'ARN of AWS SDK Layer',
     });
   }
 }
