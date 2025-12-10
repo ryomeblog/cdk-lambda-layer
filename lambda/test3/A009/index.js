@@ -4,7 +4,8 @@ const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const sesClient = new SESClient({ region: process.env.AWS_REGION });
 const BUCKET_NAME = 'node12-testup-20231113';
-const RECIPIENT_EMAIL = 'homebit2021@gmail.com';
+const SENDER_EMAIL = 'bhome465@gmail.com';
+const RECIPIENT_EMAIL = 'ryome.public@gmail.com';
 
 exports.handler = async (event) => {
     try {
@@ -24,7 +25,7 @@ exports.handler = async (event) => {
 
         // メール送信
         const emailParams = {
-            Source: RECIPIENT_EMAIL, // SESで検証済みのメールアドレスを使用
+            Source: SENDER_EMAIL,
             Destination: {
                 ToAddresses: [RECIPIENT_EMAIL]
             },

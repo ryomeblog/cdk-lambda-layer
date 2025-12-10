@@ -21,19 +21,25 @@ export class CdkLambdaLayerStack extends cdk.Stack {
 
     // Lambda関数の定義リスト
     const lambdaFunctions = [
-      { folder: 'test1/A001', name: 'A001Function' },
-      { folder: 'test1/A002', name: 'A002Function' },
-      { folder: 'test1/A003', name: 'A003Function' },
-      { folder: 'test2/A004', name: 'A004Function' },
-      { folder: 'test2/A005', name: 'A005Function' },
-      { folder: 'test2/A006', name: 'A006Function' },
-      { folder: 'test3/A007', name: 'A007Function' },
-      { folder: 'test3/A008', name: 'A008Function' },
-      { folder: 'test3/A009', name: 'A009Function' },
+      { folder: 'test1/A001', name: 'A001Function', permissions: [] },
+      { folder: 'test1/A002', name: 'A002Function', permissions: [] },
+      { folder: 'test1/A003', name: 'A003Function', permissions: [] },
+      { folder: 'test2/A004', name: 'A004Function', permissions: [] },
+      { folder: 'test2/A005', name: 'A005Function', permissions: [] },
+      { folder: 'test2/A006', name: 'A006Function', permissions: [] },
+      { folder: 'test3/A007', name: 'A007Function', permissions: [] },
+      { folder: 'test3/A008', name: 'A008Function', permissions: [] },
+      {
+        folder: 'test3/A009',
+        name: 'A009Function',
+        permissions: [
+          { actions: ['ses:SendEmail', 'ses:SendRawEmail'], resources: ['*'] }
+        ]
+      },
     ];
 
     // 各Lambda関数を作成
-    lambdaFunctions.forEach(({ folder, name }) => {
+    lambdaFunctions.forEach(({ folder, name, permissions }) => {
       const fn = new lambda.Function(this, name, {
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'index.handler',
@@ -46,6 +52,17 @@ export class CdkLambdaLayerStack extends cdk.Stack {
 
       // S3バケットへの読み取り権限を付与
       bucket.grantRead(fn);
+
+      // 追加の権限を付与
+      if (permissions && permissions.length > 0) {
+        permissions.forEach(permission => {
+          fn.addToRolePolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: permission.actions,
+            resources: permission.resources,
+          }));
+        });
+      }
 
       // 関数のARNを出力
       new cdk.CfnOutput(this, `${name}Arn`, {
