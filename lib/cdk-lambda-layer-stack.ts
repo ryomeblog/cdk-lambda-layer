@@ -48,6 +48,7 @@ export class CdkLambdaLayerStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(30),
         memorySize: 256,
         layers: [awsSdkLayer],
+        logRetention: undefined, // CloudWatch LogGroupを自動作成しない
       });
 
       // S3バケットへの読み取り権限を付与
